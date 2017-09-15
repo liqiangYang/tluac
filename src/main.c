@@ -8,4 +8,3 @@ int main() {
 	thread_new();
 	return 0;
 }
-
