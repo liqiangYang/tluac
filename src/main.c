@@ -5,7 +5,7 @@
 
 #include "tluac-thread/tluac-thread.h"
 
-int listenFd
+int listenFd;
 
 int main() {
 	listenFd = socket(AF_INET, SOCK_STREAM, 0);  
