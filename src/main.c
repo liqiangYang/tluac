@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "thread/thread.h"
+#include "tluac-thread/tluac-thread.h"
 
 int main() {
 	thread_new();

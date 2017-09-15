@@ -1,9 +1,10 @@
-#include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
 //#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "../src/tluac-lua/tluac-lua.h"
 
 int _start(lua_State *L){
 	size_t len = 0;

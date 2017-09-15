@@ -2,8 +2,8 @@ LUALIB_CYGWIN=-I/usr/include -L/usr/local/bin -llua
 LUALIB=-I/usr/include -L/usr/local/bin -llua
 SRC=\
 src/main.c \
-src/thread/thread.c \
-src/lua/lua.c
+src/tluac-thread/tluac-thread.c \
+src/tluac-lua/tluac-lua.c
 
 all : clean win
 

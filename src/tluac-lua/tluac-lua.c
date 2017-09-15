@@ -1,9 +1,4 @@
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "tluac-lua.h"
 
 //int luaopen(lua_State *L) {
 //	luaL_Reg l[] = {

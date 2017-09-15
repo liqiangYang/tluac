@@ -1,4 +1,6 @@
-#include "thread.h"
+#include "tluac-thread.h"
+
+#include "../tluac-lua/tluac-lua.h"
 
 void thread_new()
 {
