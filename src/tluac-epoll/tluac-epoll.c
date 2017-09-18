@@ -182,7 +182,7 @@ int epoll_new() {
 			printf("epoll_wait error, exit\n");
 			break;
 		}
-		for (int i = 0; i < fds; i++) {
+		for (i = 0; i < fds; i++) {
 			struct myevent_s *ev = (struct myevent_s*) events[i].data.ptr;
 			if ((events[i].events & EPOLLIN) && (ev->events & EPOLLIN)) // read event
 					{
