@@ -19,7 +19,7 @@ struct myevent_s {
 	long last_active; // last active time
 };
 // set event
-void EventSet(myevent_s *ev, int fd, void (*call_back)(int, int, void*),
+void EventSet(struct myevent_s *ev, int fd, void (*call_back)(int, int, void*),
 		void *arg) {
 	ev->fd = fd;
 	ev->call_back = call_back;
@@ -32,7 +32,7 @@ void EventSet(myevent_s *ev, int fd, void (*call_back)(int, int, void*),
 	ev->last_active = time(NULL);
 }
 // add/mod an event to epoll
-void EventAdd(int epollFd, int events, myevent_s *ev) {
+void EventAdd(int epollFd, int events, struct myevent_s *ev) {
 	struct epoll_event epv = { 0, { 0 } };
 	int op;
 	epv.data.ptr = ev;
@@ -49,7 +49,7 @@ void EventAdd(int epollFd, int events, myevent_s *ev) {
 		printf("Event Add OK[fd=%d], op=%d, evnets[%0X]\n", ev->fd, op, events);
 }
 // delete an event from epoll
-void EventDel(int epollFd, myevent_s *ev) {
+void EventDel(int epollFd, struct myevent_s *ev) {
 	struct epoll_event epv = { 0, { 0 } };
 	if (ev->status != 1)
 		return;
@@ -58,7 +58,7 @@ void EventDel(int epollFd, myevent_s *ev) {
 	epoll_ctl(epollFd, EPOLL_CTL_DEL, ev->fd, &epv);
 }
 int g_epollFd;
-myevent_s g_Events[MAX_EVENTS + 1]; // g_Events[MAX_EVENTS] is used by listen fd
+struct myevent_s g_Events[MAX_EVENTS + 1]; // g_Events[MAX_EVENTS] is used by listen fd
 void RecvData(int fd, int events, void *arg);
 void SendData(int fd, int events, void *arg);
 // accept new connections from clients
@@ -182,7 +182,7 @@ int epoll_new() {
 			break;
 		}
 		for (int i = 0; i < fds; i++) {
-			myevent_s *ev = (struct myevent_s*) events[i].data.ptr;
+			struct myevent_s *ev = (struct myevent_s*) events[i].data.ptr;
 			if ((events[i].events & EPOLLIN) && (ev->events & EPOLLIN)) // read event
 					{
 				ev->call_back(ev->fd, events[i].events, ev->arg);
