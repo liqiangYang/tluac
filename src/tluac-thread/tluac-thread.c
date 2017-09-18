@@ -70,7 +70,7 @@ void *thread_listen(void *arg) {
 
 	struct context ctx = *(struct context *)arg;
 	printf("thread listen :  %p \n", ctx);
-	thread_new(ctx);
+	epoll_new(ctx);
 
 	return (void *) 0;
 }
