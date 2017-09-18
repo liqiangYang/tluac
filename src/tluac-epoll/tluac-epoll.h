@@ -13,7 +13,7 @@
 
 struct myevent_s {
 	int fd;
-	void (*call_back)(int fd, int events, void *arg);
+	void (*call_back)(struct context ctx, int fd, int events, void *arg);
 	int events;
 	void *arg;
 	int status; // 1: in epoll wait list, 0 not in

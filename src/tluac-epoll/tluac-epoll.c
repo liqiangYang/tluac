@@ -126,7 +126,7 @@ void SendData(struct context ctx, int fd, int events, void *arg) {
 	}
 }
 void InitListenSocket(struct context ctx, int epollFd) {
-	EventSet(&ctx.g_Events[MAX_EVENTS], listenFd, AcceptConn,
+	EventSet(&ctx.g_Events[MAX_EVENTS], epollFd, AcceptConn,
 			&ctx.g_Events[MAX_EVENTS]);
 	// add listen socket
 	EventAdd(epollFd, EPOLLIN, &ctx.g_Events[MAX_EVENTS]);
