@@ -43,7 +43,6 @@ void thread_create(void)
 	int temp;
 	memset(&thread, 0, sizeof(thread));          //comment1
 	/*创建线程*/
-	int threadId = 1;
 	if((temp = pthread_create(&thread[0], NULL, thread1, threadId)) != 0)  //comment2
 		printf("线程1创建失败!\n");
 	else
