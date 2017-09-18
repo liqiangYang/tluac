@@ -4,7 +4,8 @@ SRC=\
 src/main.c \
 src/tluac-thread/tluac-thread.c \
 src/tluac-lua/tluac-lua.c \
-src/tluac-epoll/tluac-epoll.c
+src/tluac-epoll/tluac-epoll.c \
+src/util/produce-consume.c
 
 all : clean win
 

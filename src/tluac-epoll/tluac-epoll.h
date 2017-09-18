@@ -20,11 +20,17 @@ struct myevent_s {
 	long last_active; // last active time
 };
 
-int listenFd;
-int g_epollFd;
 #define MAX_EVENTS 500
-struct myevent_s g_Events[MAX_EVENTS + 1]; // g_Events[MAX_EVENTS] is used by listen fd
+
+typedef struct context {
+	int epollFd;
+	struct myevent_s g_Events[MAX_EVENTS + 1];
+	struct prodcons buffer;
+};
+
+typedef struct sockaddr_in sockaddr_in;
+typedef struct sockaddr sockaddr;
+
 void RecvData(int fd, int events, void *arg);
 void SendData(int fd, int events, void *arg);
-
 int epoll_new();

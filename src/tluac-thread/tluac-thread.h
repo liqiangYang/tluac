@@ -8,10 +8,10 @@
 #include <pthread.h>
 #define DEFAULT_PORT 8888
 #define MAXLINE 4096
-pthread_t thread[2];
-pthread_mutex_t mut;
-void *thread1();
-void *thread2();
+#define THREADS 5
+
+void *thread_listen(void *arg);
+void *thread_worker(void *arg);
 void thread_create(void);
 void thread_wait(void);
 int    socket_fd;
