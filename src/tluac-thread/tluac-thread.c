@@ -1,5 +1,5 @@
 #include "tluac-thread.h"
-#include "tluac-epoll/tluac-epoll.h"
+#include "../tluac-epoll/tluac-epoll.h"
 
 #include "../tluac-lua/tluac-lua.h"
 
