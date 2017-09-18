@@ -17,7 +17,7 @@ void thread_create(void) {
 	memset(&thread, 0, sizeof(thread));
 	struct context ctx_listen;
 	/*创建线程*/
-	if ((temp = pthread_create(&thread[0], NULL, thread_listen, ctx_listen)) != 0)
+	if ((temp = pthread_create(&thread[0], NULL, thread_listen, &ctx_listen)) != 0)
 		printf("线程 监听 创建失败!\n");
 	else
 		printf("线程 监听 被创建\n");
@@ -28,7 +28,7 @@ void thread_create(void) {
 		struct context ctx;
 		ctx.buffer = buffer[i];
 
-		if ((temp = pthread_create(&thread[0], NULL, thread_worker, ctx)) != 0)
+		if ((temp = pthread_create(&thread[0], NULL, thread_worker, &ctx)) != 0)
 			printf("线程 %d 创建失败!\n", i);
 		else
 			printf("线程 %d 被创建\n", i);

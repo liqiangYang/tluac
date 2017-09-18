@@ -24,7 +24,7 @@ struct myevent_s {
 
 #define MAX_EVENTS 500
 
-typedef struct context {
+struct context {
 	int epollFd;
 	struct myevent_s g_Events[MAX_EVENTS + 1];
 	struct prodcons buffer;
