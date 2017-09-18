@@ -11,15 +11,11 @@
 #include "../util/produce-consume.h"
 #include "../tluac-thread/tluac-thread.h"
 
+#ifndef MAX_EVENTS
 #define MAX_EVENTS 500
 
 struct myevent_s;
-
-struct context {
-	int epollFd;
-	struct myevent_s g_Events[MAX_EVENTS + 1];
-	struct prodcons buffer;
-};
+struct context;
 
 struct myevent_s {
 	int fd;
@@ -32,6 +28,12 @@ struct myevent_s {
 	long last_active; // last active time
 };
 
+struct context {
+	int epollFd;
+	struct myevent_s g_Events[MAX_EVENTS + 1];
+	struct prodcons buffer;
+};
+
 
 typedef struct sockaddr_in sockaddr_in;
 typedef struct sockaddr sockaddr;
@@ -39,3 +41,4 @@ typedef struct sockaddr sockaddr;
 void RecvData(struct context ctx, int fd, int events, void *arg);
 void SendData(struct context ctx, int fd, int events, void *arg);
 int epoll_new(struct context ctx);
+#endif
