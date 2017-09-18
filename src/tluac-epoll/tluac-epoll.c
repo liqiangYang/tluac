@@ -8,7 +8,7 @@
 //
 #include "tluac-epoll.h"
 // set event
-void EventSet(struct myevent_s *ev, int fd, void (*call_back)(int, int, void*),
+void EventSet(struct myevent_s *ev, int fd, void (*call_back)(struct context, int, int, void *),
 		void *arg) {
 	ev->fd = fd;
 	ev->call_back = call_back;
