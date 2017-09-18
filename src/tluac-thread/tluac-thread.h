@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include "../util/produce-consume.h"
 #define DEFAULT_PORT 8888
 #define MAXLINE 4096
 #define THREADS 5
