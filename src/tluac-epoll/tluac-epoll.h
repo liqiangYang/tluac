@@ -6,6 +6,5 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
-#include <iostream>
 
 int epoll_new();

@@ -7,7 +7,6 @@
 // by sparkling
 // 
 #include "../tluac-epoll/tluac-epoll.h"
-using namespace std;
 #define MAX_EVENTS 500
 struct myevent_s
 {
