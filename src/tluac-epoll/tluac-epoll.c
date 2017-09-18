@@ -15,9 +15,6 @@ void EventSet(struct myevent_s *ev, int fd, void (*call_back)(int, int, void*),
 	ev->events = 0;
 	ev->arg = arg;
 	ev->status = 0;
-	bzero(ev->buff, sizeof(ev->buff));
-	ev->s_offset = 0;
-	ev->len = 0;
 	ev->last_active = time(NULL);
 }
 // add/mod an event to epoll
@@ -114,6 +111,9 @@ void SendData(int fd, int events, void *arg) {
 		ev->s_offset += len;
 		if (ev->s_offset == ev->len) {
 			// change to receive event
+			bzero(ev->buff, sizeof(ev->buff));
+			ev->s_offset = 0;
+			ev->len = 0;
 			EventDel(g_epollFd, ev);
 			EventSet(ev, fd, RecvData, ev);
 			EventAdd(g_epollFd, EPOLLIN, ev);
