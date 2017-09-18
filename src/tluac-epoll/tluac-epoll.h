@@ -7,4 +7,6 @@
 #include <stdio.h>
 #include <errno.h>
 
+int listenFd;
+
 int epoll_new();

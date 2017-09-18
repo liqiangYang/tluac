@@ -9,8 +9,6 @@
 typedef struct sockaddr_in sockaddr_in;
 typedef struct sockaddr sockaddr;
 
-int listenFd;
-
 int main() {
 	listenFd = socket(AF_INET, SOCK_STREAM, 0);
 	fcntl(listenFd, F_SETFL, O_NONBLOCK); // set non-blocking
