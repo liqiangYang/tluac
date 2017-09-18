@@ -136,7 +136,7 @@ void SendData(int fd, int events, void *arg) {
 	} else {
 		close(ev->fd);
 		EventDel(g_epollFd, ev);
-		printf("send[fd=%d] error[%d]\n", fd, errno);
+		printf("send[fd=%d] error[%d]:%s\n", fd, errno, strerror(errno));
 	}
 }
 void InitListenSocket(int epollFd, short port) {
