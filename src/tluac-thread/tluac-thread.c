@@ -68,7 +68,7 @@ void *thread_listen(void *arg) {
 	// create & bind listen socket, and add to epoll, set non-blocking
 	InitListenSocket(l_epollFd, port);
 
-	struct context ctx = (struct prodcons) arg;
+	struct context ctx = *(struct context *)arg;
 	printf("thread listen :  %p \n", ctx);
 	thread_new(ctx);
 
@@ -76,7 +76,7 @@ void *thread_listen(void *arg) {
 }
 
 void *thread_worker(void *arg) {
-	struct context ctx = (struct prodcons) arg;
+	struct context ctx = *(struct context*) arg;
 	printf("thread :  %p \n", ctx);
 
 	epoll_new(ctx);
