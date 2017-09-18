@@ -157,11 +157,12 @@ int epoll_new() {
 	struct epoll_event events[MAX_EVENTS];
 	printf("server running:port[%d]\n", port);
 	int checkPos = 0;
+	int i = 0;
 	while (1) {
 		// a simple timeout check here, every time 100, better to use a mini-heap, and add timer event
 		long now = time(NULL);
-		for (int i = 0; i < 100; i++, checkPos++) // doesn't check listen fd
-				{
+		for (i = 0; i < 100; i++, checkPos++) // doesn't check listen fd
+		{
 			if (checkPos == MAX_EVENTS)
 				checkPos = 0; // recycle
 			if (g_Events[checkPos].status != 1)
