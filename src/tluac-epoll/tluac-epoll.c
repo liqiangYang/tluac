@@ -73,7 +73,7 @@ void AcceptConn(struct context ctx, int fd, int events, void *arg) {
 		}
 
 		int threadId = nfd % THREADS + 1;
-		put(buffer[threadId], nfd);
+		put(&buffer[threadId], nfd);
 
 	} while (0);
 	printf("new conn[%s:%d][time:%d], pos[%d]\n", inet_ntoa(sin.sin_addr),
@@ -158,7 +158,7 @@ int epoll_new(struct context ctx) {
 				EventDel(epollFd, &ctx.g_Events[checkPos]);
 			}
 		}
-		int nfd = get(ctx.buffer);
+		int nfd = get(&ctx.buffer);
 		if (nfd > 0)
 		{
 			// add a read event for receive data
