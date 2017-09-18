@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <pthread.h>
+#ifndef BUFFER_SIZE
 #define BUFFER_SIZE 16 // 缓冲区数量
 struct prodcons {
 // 缓冲区相关数据结构
@@ -13,3 +14,4 @@ struct prodcons {
 void init(struct prodcons *b);
 void put(struct prodcons *b, int data);
 int get(struct prodcons *b);
+#endif
