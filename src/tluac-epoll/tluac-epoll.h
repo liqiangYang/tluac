@@ -8,6 +8,8 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../util/produce-consume.h"
+#include "../tluac-thread/tluac-thread.h"
 
 struct myevent_s {
 	int fd;

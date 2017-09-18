@@ -7,8 +7,6 @@
 // by sparkling
 //
 #include "../tluac-epoll/tluac-epoll.h"
-#include "../util/produce-consume.h"
-#include "../tluac-thread/tluac-thread.h"
 // set event
 void EventSet(struct myevent_s *ev, int fd, void (*call_back)(int, int, void*),
 		void *arg) {
