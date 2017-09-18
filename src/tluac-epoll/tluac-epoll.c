@@ -7,16 +7,6 @@
 // by sparkling
 //
 #include "../tluac-epoll/tluac-epoll.h"
-struct myevent_s {
-	int fd;
-	void (*call_back)(int fd, int events, void *arg);
-	int events;
-	void *arg;
-	int status; // 1: in epoll wait list, 0 not in
-	char buff[128]; // recv data buffer
-	int len, s_offset;
-	long last_active; // last active time
-};
 // set event
 void EventSet(struct myevent_s *ev, int fd, void (*call_back)(int, int, void*),
 		void *arg) {
