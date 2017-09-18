@@ -44,7 +44,7 @@ void EventDel(int epollFd, struct myevent_s *ev) {
 	epoll_ctl(epollFd, EPOLL_CTL_DEL, ev->fd, &epv);
 }
 // accept new connections from clients
-void AcceptConn(struct context ctx, int fd, int events, void *arg) {
+void AcceptConn(struct context *ctx, int fd, int events, void *arg) {
 	struct sockaddr_in sin;
 	socklen_t len = sizeof(struct sockaddr_in);
 	int nfd, i;
@@ -57,7 +57,7 @@ void AcceptConn(struct context ctx, int fd, int events, void *arg) {
 	}
 	do {
 		for (i = 0; i < MAX_EVENTS; i++) {
-			if (ctx.g_Events[i].status == 0) {
+			if (ctx->g_Events[i].status == 0) {
 				break;
 			}
 		}
@@ -77,32 +77,32 @@ void AcceptConn(struct context ctx, int fd, int events, void *arg) {
 
 	} while (0);
 	printf("new conn[%s:%d][time:%d], pos[%d]\n", inet_ntoa(sin.sin_addr),
-			ntohs(sin.sin_port), ctx.g_Events[i].last_active, i);
+			ntohs(sin.sin_port), ctx->g_Events[i].last_active, i);
 }
 // receive data
-void RecvData(struct context ctx, int fd, int events, void *arg) {
+void RecvData(struct context *ctx, int fd, int events, void *arg) {
 	struct myevent_s *ev = (struct myevent_s*) arg;
 	int len;
 	// receive data
 	len = recv(fd, ev->buff + ev->len, sizeof(ev->buff) - 1 - ev->len, 0);
-	EventDel(ctx.epollFd, ev);
+	EventDel(ctx->epollFd, ev);
 	if (len > 0) {
 		ev->len += len;
 		ev->buff[len] = '\0';
 		printf("C[%d]:%s\n", fd, ev->buff);
 		// change to send event
 		EventSet(ev, fd, SendData, ev);
-		EventAdd(ctx.epollFd, EPOLLOUT, ev);
+		EventAdd(ctx->epollFd, EPOLLOUT, ev);
 	} else if (len == 0) {
 		close(ev->fd);
-		printf("[fd=%d] pos[%d], closed gracefully.\n", fd, ev - ctx.g_Events);
+		printf("[fd=%d] pos[%d], closed gracefully.\n", fd, ev - ctx->g_Events);
 	} else {
 		close(ev->fd);
 		printf("recv[fd=%d] error[%d]:%s\n", fd, errno, strerror(errno));
 	}
 }
 // send data
-void SendData(struct context ctx, int fd, int events, void *arg) {
+void SendData(struct context *ctx, int fd, int events, void *arg) {
 	struct myevent_s *ev = (struct myevent_s*) arg;
 	int len;
 	// send data
@@ -115,30 +115,30 @@ void SendData(struct context ctx, int fd, int events, void *arg) {
 			bzero(ev->buff, sizeof(ev->buff));
 			ev->s_offset = 0;
 			ev->len = 0;
-			EventDel(ctx.epollFd, ev);
+			EventDel(ctx->epollFd, ev);
 			EventSet(ev, fd, RecvData, ev);
-			EventAdd(ctx.epollFd, EPOLLIN, ev);
+			EventAdd(ctx->epollFd, EPOLLIN, ev);
 		}
 	} else {
 		printf("send[fd=%d,%d] error[%d]:%s\n", fd, ev->fd, errno, strerror(errno));
 		close(ev->fd);
-		EventDel(ctx.epollFd, ev);
+		EventDel(ctx->epollFd, ev);
 	}
 }
-void InitListenSocket(struct context ctx, int epollFd) {
-	EventSet(&ctx.g_Events[MAX_EVENTS], epollFd, AcceptConn,
-			&ctx.g_Events[MAX_EVENTS]);
+void InitListenSocket(struct context *ctx, int epollFd) {
+	EventSet(&ctx->g_Events[MAX_EVENTS], epollFd, AcceptConn,
+			&ctx->g_Events[MAX_EVENTS]);
 	// add listen socket
-	EventAdd(epollFd, EPOLLIN, &ctx.g_Events[MAX_EVENTS]);
+	EventAdd(epollFd, EPOLLIN, &ctx->g_Events[MAX_EVENTS]);
 }
-int epoll_new(struct context ctx) {
+int epoll_new(struct context *ctx) {
 	// event loop
 	struct epoll_event events[MAX_EVENTS];
 	int checkPos = 0;
 	int epollFd = epoll_create(MAX_EVENTS);
 	if (epollFd <= 0)
 		printf("create epoll failed.%d\n", epollFd);
-	ctx.epollFd = epollFd;
+	ctx->epollFd = epollFd;
 	int i = 0;
 	while (1) {
 		// a simple timeout check here, every time 100, better to use a mini-heap, and add timer event
@@ -147,23 +147,23 @@ int epoll_new(struct context ctx) {
 		{
 			if (checkPos == MAX_EVENTS)
 				checkPos = 0; // recycle
-			if (ctx.g_Events[checkPos].status != 1)
+			if (ctx->g_Events[checkPos].status != 1)
 				continue;
-			long duration = now - ctx.g_Events[checkPos].last_active;
+			long duration = now - ctx->g_Events[checkPos].last_active;
 			if (duration >= 60) // 60s timeout
 			{
-				close(ctx.g_Events[checkPos].fd);
-				printf("[fd=%d] timeout[%d--%d].\n", ctx.g_Events[checkPos].fd,
-						ctx.g_Events[checkPos].last_active, now);
-				EventDel(epollFd, &ctx.g_Events[checkPos]);
+				close(ctx->g_Events[checkPos].fd);
+				printf("[fd=%d] timeout[%d--%d].\n", ctx->g_Events[checkPos].fd,
+						ctx->g_Events[checkPos].last_active, now);
+				EventDel(epollFd, &ctx->g_Events[checkPos]);
 			}
 		}
-		int nfd = get(&ctx.buffer);
+		int nfd = get(&ctx->buffer);
 		if (nfd > 0)
 		{
 			// add a read event for receive data
-			EventSet(&ctx.g_Events[i], nfd, RecvData, &ctx.g_Events[i]);
-			EventAdd(ctx.epollFd, EPOLLIN, &ctx.g_Events[i]);
+			EventSet(&ctx->g_Events[i], nfd, RecvData, &ctx->g_Events[i]);
+			EventAdd(ctx->epollFd, EPOLLIN, &ctx->g_Events[i]);
 		}
 		// wait for events to happen
 		int fds = epoll_wait(epollFd, events, MAX_EVENTS, 1000);
