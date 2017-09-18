@@ -6,7 +6,7 @@
 // 本来只是简单的示意程序，决定还是加上 recv/send时的buffer偏移
 // by sparkling
 // 
-#include "tluac-epoll.h"
+#include "../tluac-epoll/tluac-epoll.h"
 using namespace std;
 #define MAX_EVENTS 500
 struct myevent_s
