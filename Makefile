@@ -3,7 +3,8 @@ LUALIB=-I/usr/include -L/usr/local/bin -llua
 SRC=\
 src/main.c \
 src/tluac-thread/tluac-thread.c \
-src/tluac-lua/tluac-lua.c
+src/tluac-lua/tluac-lua.c \
+src/tluac-epoll/tluac-epoll.c
 
 all : clean win
 

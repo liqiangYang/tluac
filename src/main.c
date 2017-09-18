@@ -6,6 +6,8 @@
 
 #include "tluac-thread/tluac-thread.h"
 #include "tluac-epoll/tluac-epoll.h"
+typedef struct sockaddr_in sockaddr_in;
+typedef struct sockaddr sockaddr;
 
 int listenFd;
 
