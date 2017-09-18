@@ -42,12 +42,12 @@ void thread_create(void)
 	int temp;
 	memset(&thread, 0, sizeof(thread));          //comment1
 	/*创建线程*/
-	if((temp = pthread_create(&thread[0], NULL, thread1, NULL)) != 0)  //comment2
+	if((temp = pthread_create(&thread[0], NULL, thread1, 1)) != 0)  //comment2
 		printf("线程1创建失败!\n");
 	else
 		printf("线程1被创建\n");
 
-	if((temp = pthread_create(&thread[1], NULL, thread1, NULL)) != 0)  //comment3
+	if((temp = pthread_create(&thread[1], NULL, thread1, 2)) != 0)  //comment3
 		printf("线程2创建失败");
 	else
 		printf("线程2被创建\n");
@@ -69,9 +69,10 @@ void thread_wait(void)
 	}
 }
 
-void *thread1()
+void *thread1(void *arg)
 {
-	printf("thread1 :主函数在等我完成任务吗？\n");
+	int threadId = (int)arg;
+	printf("thread1 :主函数在等我完成任务吗？ \t %d \n", threadId);
 	int    connect_fd;
 	char    buff[4096];
 	int     n;
