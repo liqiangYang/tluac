@@ -7,7 +7,6 @@
 // by sparkling
 //
 #include "../tluac-epoll/tluac-epoll.h"
-#define MAX_EVENTS 500
 struct myevent_s {
 	int fd;
 	void (*call_back)(int fd, int events, void *arg);
@@ -57,10 +56,6 @@ void EventDel(int epollFd, struct myevent_s *ev) {
 	ev->status = 0;
 	epoll_ctl(epollFd, EPOLL_CTL_DEL, ev->fd, &epv);
 }
-int g_epollFd;
-struct myevent_s g_Events[MAX_EVENTS + 1]; // g_Events[MAX_EVENTS] is used by listen fd
-void RecvData(int fd, int events, void *arg);
-void SendData(int fd, int events, void *arg);
 // accept new connections from clients
 void AcceptConn(int fd, int events, void *arg) {
 	struct sockaddr_in sin;
@@ -134,9 +129,9 @@ void SendData(int fd, int events, void *arg) {
 			EventAdd(g_epollFd, EPOLLIN, ev);
 		}
 	} else {
+		printf("send[fd=%d,%d] error[%d]:%s\n", fd, ev->fd, errno, strerror(errno));
 		close(ev->fd);
 		EventDel(g_epollFd, ev);
-		printf("send[fd=%d] error[%d]:%s\n", fd, errno, strerror(errno));
 	}
 }
 void InitListenSocket(int epollFd, short port) {
@@ -169,7 +164,7 @@ int epoll_new() {
 				continue;
 			long duration = now - g_Events[checkPos].last_active;
 			if (duration >= 60) // 60s timeout
-					{
+			{
 				close(g_Events[checkPos].fd);
 				printf("[fd=%d] timeout[%d--%d].\n", g_Events[checkPos].fd,
 						g_Events[checkPos].last_active, now);
@@ -185,11 +180,11 @@ int epoll_new() {
 		for (i = 0; i < fds; i++) {
 			struct myevent_s *ev = (struct myevent_s*) events[i].data.ptr;
 			if ((events[i].events & EPOLLIN) && (ev->events & EPOLLIN)) // read event
-					{
+			{
 				ev->call_back(ev->fd, events[i].events, ev->arg);
 			}
 			if ((events[i].events & EPOLLOUT) && (ev->events & EPOLLOUT)) // write event
-					{
+			{
 				ev->call_back(ev->fd, events[i].events, ev->arg);
 			}
 		}
