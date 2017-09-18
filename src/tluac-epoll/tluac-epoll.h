@@ -13,6 +13,8 @@
 
 #define MAX_EVENTS 500
 
+struct myevent_s;
+
 struct context {
 	int epollFd;
 	struct myevent_s g_Events[MAX_EVENTS + 1];
@@ -29,6 +31,7 @@ struct myevent_s {
 	int len, s_offset;
 	long last_active; // last active time
 };
+
 
 typedef struct sockaddr_in sockaddr_in;
 typedef struct sockaddr sockaddr;
