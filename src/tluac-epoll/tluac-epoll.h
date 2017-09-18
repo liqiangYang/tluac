@@ -11,23 +11,23 @@
 #include "../util/produce-consume.h"
 #include "../tluac-thread/tluac-thread.h"
 
-struct myevent_s {
-	int fd;
-	void (*call_back)(struct context, int, int, void *);
-	int events;
-	void *arg;
-	int status; // 1: in epoll wait list, 0 not in
-	char buff[128]; // recv data buffer
-	int len, s_offset;
-	long last_active; // last active time
-};
-
 #define MAX_EVENTS 500
 
 struct context {
 	int epollFd;
 	struct myevent_s g_Events[MAX_EVENTS + 1];
 	struct prodcons buffer;
+};
+
+struct myevent_s {
+	int fd;
+	void (*call_back)(struct context ctx, int fd, int events, void *arg);
+	int events;
+	void *arg;
+	int status; // 1: in epoll wait list, 0 not in
+	char buff[128]; // recv data buffer
+	int len, s_offset;
+	long last_active; // last active time
 };
 
 typedef struct sockaddr_in sockaddr_in;
