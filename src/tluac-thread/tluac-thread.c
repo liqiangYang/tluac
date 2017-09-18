@@ -3,8 +3,6 @@
 #include "../tluac-lua/tluac-lua.h"
 #include "../util/produce-consume.h"
 
-struct prodcons buffer[THREADS];
-pthread_t thread[THREADS + 1];
 int listenFd;
 
 void thread_new() {

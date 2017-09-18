@@ -6,7 +6,7 @@
 // 本来只是简单的示意程序，决定还是加上 recv/send时的buffer偏移
 // by sparkling
 //
-#include "../tluac-epoll/tluac-epoll.h"
+#include "tluac-epoll.h"
 // set event
 void EventSet(struct myevent_s *ev, int fd, void (*call_back)(int, int, void*),
 		void *arg) {

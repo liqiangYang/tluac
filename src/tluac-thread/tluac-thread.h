@@ -10,6 +10,9 @@
 #define MAXLINE 4096
 #define THREADS 5
 
+struct prodcons buffer[THREADS];
+pthread_t thread[THREADS + 1];
+
 void *thread_listen(void *arg);
 void *thread_worker(void *arg);
 void thread_create(void);
