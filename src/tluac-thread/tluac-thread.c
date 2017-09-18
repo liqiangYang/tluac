@@ -24,11 +24,11 @@ void thread_create(void) {
 
 	int i = 0;
 	for (i = 1; i < THREADS + 1; i++) {
-		init(buffer[i]);
+		init(&buffer[i]);
 		struct context ctx;
 		ctx.buffer = buffer[i];
 
-		if ((temp = pthread_create(&thread[0], NULL, thread_worker, &ctx)) != 0)
+		if ((temp = pthread_create(&thread[i], NULL, thread_worker, &ctx)) != 0)
 			printf("线程 %d 创建失败!\n", i);
 		else
 			printf("线程 %d 被创建\n", i);
