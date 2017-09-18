@@ -33,6 +33,6 @@ struct context {
 typedef struct sockaddr_in sockaddr_in;
 typedef struct sockaddr sockaddr;
 
-void RecvData(int fd, int events, void *arg);
-void SendData(int fd, int events, void *arg);
-int epoll_new();
+void RecvData(struct context ctx, int fd, int events, void *arg);
+void SendData(struct context ctx, int fd, int events, void *arg);
+int epoll_new(struct context ctx);
