@@ -11,7 +11,7 @@
 #define MAXLINE 4096
 #define THREADS 5
 
-struct prodcons buffer[THREADS];
+struct prodcons buffer[THREADS + 1];
 pthread_t thread[THREADS + 1];
 
 void *thread_listen(void *arg);
