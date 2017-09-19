@@ -135,10 +135,12 @@ int epoll_new(struct context *ctx, int listen) {
 	// event loop
 	struct epoll_event events[MAX_EVENTS];
 	int checkPos = 0;
-	int epollFd = epoll_create(MAX_EVENTS);
-	if (epollFd <= 0)
-		printf("create epoll failed.%d\n", epollFd);
-	ctx->epollFd = epollFd;
+	if (!listen){
+		int epollFd = epoll_create(MAX_EVENTS);
+		if (epollFd <= 0)
+			printf("create epoll failed.%d\n", epollFd);
+		ctx->epollFd = epollFd;
+	}
 	int i = 0;
 	while (1) {
 		// a simple timeout check here, every time 100, better to use a mini-heap, and add timer event
@@ -159,13 +161,13 @@ int epoll_new(struct context *ctx, int listen) {
 			}
 		}
 		if (!listen){
-		int nfd = get(&ctx->buffer);
-		if (nfd > 0)
-		{
-			// add a read event for receive data
-			EventSet(&ctx->g_Events[i], nfd, RecvData, &ctx->g_Events[i]);
-			EventAdd(ctx->epollFd, EPOLLIN, &ctx->g_Events[i]);
-		}
+			int nfd = get(&ctx->buffer);
+			if (nfd > 0)
+			{
+				// add a read event for receive data
+				EventSet(&ctx->g_Events[i], nfd, RecvData, &ctx->g_Events[i]);
+				EventAdd(ctx->epollFd, EPOLLIN, &ctx->g_Events[i]);
+			}
 		}
 		// wait for events to happen
 		int fds = epoll_wait(epollFd, events, MAX_EVENTS, 1000);
