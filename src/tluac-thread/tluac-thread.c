@@ -6,6 +6,7 @@
 int listenFd;
 
 void thread_new() {
+	memset(&buffer, 0, sizeof(buffer) );
 	thread_create();
 	thread_wait();
 }
@@ -26,12 +27,12 @@ void thread_create(void) {
 	int i = 0;
 	for (i = 1; i < THREADS + 1; i++) {
 		init(&buffer[i]);
-		ctxs[i].buffer = buffer[i];
+		ctxs[i].buffer = &buffer[i];
 
 		if ((temp = pthread_create(&thread[i], NULL, thread_worker, &ctxs[i])) != 0)
 			printf("线程 %d 创建失败!\n", i);
 		else
-			printf("线程 %d 被创建\n", i);
+			printf("线程 %d 被创建 buffer : %p %p\n", i, ctxs[i].buffer,  &buffer[i]);
 	}
 }
 

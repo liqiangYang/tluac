@@ -74,6 +74,7 @@ void AcceptConn(struct context *ctx, int fd, int events, void *arg) {
 
 		int threadId = nfd % THREADS + 1;
 		put(&buffer[threadId], nfd);
+//		printf("put %d, to threadId : %d %p\n", nfd, threadId, &buffer[threadId]);
 
 	} while (0);
 	printf("new conn[%s:%d][time:%ld], pos[%d]\n", inet_ntoa(sin.sin_addr),
@@ -166,7 +167,8 @@ int epoll_new(struct context *ctx, int listen) {
 			}
 		}
 		if (!listen){
-			int nfd = get(&ctx->buffer);
+			int nfd = get(ctx->buffer);
+//		printf("get %d %p\n", nfd, ctx->buffer);
 			if (nfd > 0)
 			{
 				// add a read event for receive data
@@ -184,6 +186,7 @@ int epoll_new(struct context *ctx, int listen) {
 			struct myevent_s *ev = (struct myevent_s*) events[i].data.ptr;
 			if ((events[i].events & EPOLLIN) && (ev->events & EPOLLIN)) // read event
 			{
+				printf("%d %p\n", ev->fd, ev->arg);
 				ev->call_back(ctx, ev->fd, events[i].events, ev->arg);
 			}
 			if ((events[i].events & EPOLLOUT) && (ev->events & EPOLLOUT)) // write event
