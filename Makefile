@@ -19,7 +19,7 @@ tluac.exe : $(SRC)
 	gcc -g -Wall -o $@ $^ $(LUALIB_CYGWIN) -lpthread
 	
 tluac : $(SRC)
-	gcc -o $@ $^ $(LUALIB) -lpthread
+	gcc -Wall -g -o $@ $^ $(LUALIB) -lpthread
 
 clean :
 	rm -rf tluac.dll tluac.exe tluac

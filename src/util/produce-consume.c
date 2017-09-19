@@ -29,6 +29,8 @@ int get(struct prodcons *b) {
 	pthread_mutex_lock(&b->lock);
 	/* 等待缓冲区非空*/
 	if (b->writepos == b->readpos) {
+		pthread_mutex_unlock(&b->lock);
+		return 0;
 		pthread_cond_wait(&b->notempty, &b->lock);
 	}
 	/* 读数据,移动读指针*/
