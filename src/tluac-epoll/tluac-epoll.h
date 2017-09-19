@@ -19,7 +19,7 @@ struct context;
 
 struct myevent_s {
 	int fd;
-	void (*call_back)(struct context ctx, int fd, int events, void *arg);
+	void (*call_back)(struct context *ctx, int fd, int events, void *arg);
 	int events;
 	void *arg;
 	int status; // 1: in epoll wait list, 0 not in
@@ -38,7 +38,8 @@ struct context {
 typedef struct sockaddr_in sockaddr_in;
 typedef struct sockaddr sockaddr;
 
-void RecvData(struct context ctx, int fd, int events, void *arg);
-void SendData(struct context ctx, int fd, int events, void *arg);
-int epoll_new(struct context ctx);
+void RecvData(struct context *ctx, int fd, int events, void *arg);
+void SendData(struct context *ctx, int fd, int events, void *arg);
+int epoll_new(struct context *ctx, int listen);
+void InitListenSocket(struct context *ctx, int epollFd);
 #endif

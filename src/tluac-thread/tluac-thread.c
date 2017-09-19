@@ -10,10 +10,13 @@ void thread_new() {
 	thread_wait();
 }
 
+struct context ctxs[THREADS + 1];
+
 void thread_create(void) {
 	int temp;
 	memset(&thread, 0, sizeof(thread));
 	struct context ctx_listen;
+	ctxs[0] = ctx_listen;
 	/*创建线程*/
 	if ((temp = pthread_create(&thread[0], NULL, thread_listen, &ctx_listen)) != 0)
 		printf("线程 监听 创建失败!\n");
@@ -25,6 +28,7 @@ void thread_create(void) {
 		init(&buffer[i]);
 		struct context ctx;
 		ctx.buffer = buffer[i];
+		ctxs[i] = ctx;
 
 		if ((temp = pthread_create(&thread[i], NULL, thread_worker, &ctx)) != 0)
 			printf("线程 %d 创建失败!\n", i);
@@ -60,26 +64,26 @@ void *thread_listen(void *arg) {
 
 	int l_epollFd;
 
-	unsigned short port = 8888; // default port
 	// create epoll
 	l_epollFd = epoll_create(MAX_EVENTS);
 	if (l_epollFd <= 0)
 		printf("create epoll failed.%d\n", l_epollFd);
-	// create & bind listen socket, and add to epoll, set non-blocking
-	InitListenSocket(l_epollFd, port);
 
-	struct context ctx = *(struct context *)arg;
+	struct context *ctx = (struct context *)arg;
+	ctx->epollFd = l_epollFd;
 	printf("thread listen :  %p \n", ctx);
-	epoll_new(ctx);
+	// create & bind listen socket, and add to epoll, set non-blocking
+	InitListenSocket(ctx, listenFd);
+	epoll_new(ctx, 1);
 
 	return (void *) 0;
 }
 
 void *thread_worker(void *arg) {
-	struct context ctx = *(struct context*) arg;
+	struct context *ctx = (struct context*) arg;
 	printf("thread :  %p \n", ctx);
 
-	epoll_new(ctx);
+	epoll_new(ctx, 0);
 
 	return (void *) 0;
 }
