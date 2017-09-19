@@ -135,11 +135,16 @@ int epoll_new(struct context *ctx, int listen) {
 	// event loop
 	struct epoll_event events[MAX_EVENTS];
 	int checkPos = 0;
+	int epollFd;
 	if (!listen){
-		int epollFd = epoll_create(MAX_EVENTS);
+		epollFd = epoll_create(MAX_EVENTS);
 		if (epollFd <= 0)
 			printf("create epoll failed.%d\n", epollFd);
 		ctx->epollFd = epollFd;
+	}
+	else
+	{
+		epollFd = ctx->epollFd;
 	}
 	int i = 0;
 	while (1) {
