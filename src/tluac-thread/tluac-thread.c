@@ -1,6 +1,5 @@
 #include "tluac-thread.h"
 #include "../tluac-epoll/tluac-epoll.h"
-#include "../tluac-lua/tluac-lua.h"
 #include "../util/produce-consume.h"
 
 int listenFd;
