@@ -89,6 +89,9 @@ void *thread_worker(void *arg) {
 	struct context *ctx = (struct context*) arg;
 	printf("thread :  %p \n", ctx);
 
+	luanew(ctx);
+	luadofile(ctx, "t.lua");
+
 	epoll_new(ctx, 0);
 
 	return (void *) 0;

@@ -1,5 +1,56 @@
 #include "tluac-lua.h"
 
+void luanew(struct context * ctx){
+	ctx->lua = lua_open();
+	luaopen_base(ctx->lua);
+	luaopen_io(ctx->lua);
+}
+
+void luareg(struct context * ctx){
+	luaL_Reg reg[] = {
+		{"on", _on},
+		{NULL, NULL},
+	};
+//	lua_newuserdata(ctx->lua, sizeof(struct context));
+	lua_pushlightuserdata(ctx->lua, ctx);
+
+	luaL_newmetatable(ctx->lua, "ctx_metatable");
+	lua_pushstring(ctx->lua, "__index");
+	lua_pushvalue(ctx->lua, -2);
+	lua_settable(ctx->lua, -3);
+
+	lua_pushstring(ctx->lua, "CONNECT");
+	lua_pushinteger(ctx->lua, 1);
+	lua_settable(ctx->lua, -3);
+
+	lua_pushstring(ctx->lua, "MESSAGE");
+	lua_pushinteger(ctx->lua, 2);
+	lua_settable(ctx->lua, -3);
+
+	lua_pushstring(ctx->lua, "CLOSE");
+	lua_pushinteger(ctx->lua, 3);
+	lua_settable(ctx->lua, -3);
+
+	luaL_setfuncs(ctx->lua, reg, 0);
+	lua_setmetatable(ctx->lua, -2);
+
+	lua_setglobal(ctx->lua, "tluac");
+
+	lua_settop(ctx->lua, 0);
+}
+
+int _on(lua_State *L){
+	struct context *ctx = lua_touserdata(L, 1);
+	int t = lua_tointeger(L, 2);
+	char *func = lua_tostring(L, 3);
+
+	printf("t = %d, func = %s\n", t,func);
+}
+
+void luadofile(struct context * ctx, char *file){
+	luaL_dofile(ctx->lua, file);
+}
+
 //int luaopen(lua_State *L) {
 //	luaL_Reg l[] = {
 //		{ "new", _new },
