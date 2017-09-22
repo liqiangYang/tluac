@@ -10,6 +10,8 @@
 // set event
 void EventSet(struct myevent_s *ev, int fd, void (*call_back)(struct context *, int, int, void *),
 		void *arg) {
+
+printf("EventSet %d\n",fd);
 	ev->fd = fd;
 	ev->call_back = call_back;
 	ev->events = 0;
@@ -35,13 +37,14 @@ void EventAdd(int epollFd, int events, struct myevent_s *ev) {
 		printf("Event Add OK[fd=%d], op=%d, evnets[%0X]\n", ev->fd, op, events);
 }
 // delete an event from epoll
-void EventDel(int epollFd, struct myevent_s *ev) {
+int EventDel(int epollFd, struct myevent_s *ev) {
 	struct epoll_event epv = { 0, { 0 } };
-	if (ev->status != 1)
-		return;
+	//if (ev->status != 1)
+	//	return 2;
 	epv.data.ptr = ev;
 	ev->status = 0;
-	epoll_ctl(epollFd, EPOLL_CTL_DEL, ev->fd, &epv);
+	int t = epoll_ctl(epollFd, EPOLL_CTL_DEL, ev->fd, &epv);
+	return t;
 }
 // accept new connections from clients
 void AcceptConn(struct context *ctx, int fd, int events, void *arg) {
@@ -74,7 +77,7 @@ void AcceptConn(struct context *ctx, int fd, int events, void *arg) {
 
 		int threadId = nfd % THREADS + 1;
 		put(&buffer[threadId], nfd);
-//		printf("put %d, to threadId : %d %p\n", nfd, threadId, &buffer[threadId]);
+		printf("put %d, to threadId : %d %p\n", nfd, threadId, &buffer[threadId]);
 
 	} while (0);
 	printf("new conn[%s:%d][time:%ld], pos[%d]\n", inet_ntoa(sin.sin_addr),
@@ -86,39 +89,41 @@ void RecvData(struct context *ctx, int fd, int events, void *arg) {
 	int len;
 	// receive data
 	len = recv(fd, ev->buff + ev->len, sizeof(ev->buff) - 1 - ev->len, 0);
-	EventDel(ctx->epollFd, ev);
+	int t = EventDel(ctx->epollFd, ev);
 	if (len > 0) {
 		ev->len += len;
 		ev->buff[len] = '\0';
-		printf("C[%d]:%s\n", fd, ev->buff);
+		printf("Recv [%d]:%s\n", fd, ev->buff);
 		// change to send event
 		EventSet(ev, fd, SendData, ev);
-		EventAdd(ctx->epollFd, EPOLLOUT, ev);
+		EventAdd(ctx->epollFd, EPOLLOUT | EPOLLONESHOT , ev);
 	} else if (len == 0) {
 		close(ev->fd);
-		printf("[fd=%d] pos[%ld], closed gracefully.\n", fd, ev - ctx->g_Events);
-	} else {
+		printf("[fd=%d] pos[%ld], closed gracefully t = %d %d.\n", fd, ev - ctx->g_Events, t, ctx->threadId);
+	} else if (errno != EAGAIN) {
 		close(ev->fd);
-		printf("recv[fd=%d] error[%d]:%s\n", fd, errno, strerror(errno));
+		printf("[%d] recv[fd=%d] error[%d]:%s t = %d\n", ctx->threadId, fd, errno, strerror(errno), t);
 	}
 }
 // send data
 void SendData(struct context *ctx, int fd, int events, void *arg) {
 	struct myevent_s *ev = (struct myevent_s*) arg;
 	int len;
+	char t[100];
+	sprintf(t, "%d = %s", ctx->threadId, ev->buff + ev->s_offset);
 	// send data
-	len = send(fd, ev->buff + ev->s_offset, ev->len - ev->s_offset, 0);
-	if (len > 0) {
+	len = send(fd, t, ev->len - ev->s_offset + 4, 0);
+	if (len >= 0) {
 		printf("send[fd=%d], [%d<->%d]%s\n", fd, len, ev->len, ev->buff);
 		ev->s_offset += len;
-		if (ev->s_offset == ev->len) {
+		if (ev->s_offset >= ev->len) {
 			// change to receive event
 			bzero(ev->buff, sizeof(ev->buff));
 			ev->s_offset = 0;
 			ev->len = 0;
 			EventDel(ctx->epollFd, ev);
 			EventSet(ev, fd, RecvData, ev);
-			EventAdd(ctx->epollFd, EPOLLIN, ev);
+			EventAdd(ctx->epollFd, EPOLLIN | EPOLLONESHOT , ev);
 		}
 	} else {
 		printf("send[fd=%d,%d] error[%d]:%s\n", fd, ev->fd, errno, strerror(errno));
@@ -127,6 +132,7 @@ void SendData(struct context *ctx, int fd, int events, void *arg) {
 	}
 }
 void InitListenSocket(struct context *ctx, int fd) {
+	printf("InitListenSocket %p %d\n", ctx, fd);
 	EventSet(&ctx->g_Events[MAX_EVENTS], fd, AcceptConn,
 			&ctx->g_Events[MAX_EVENTS]);
 	// add listen socket
@@ -151,6 +157,7 @@ int epoll_new(struct context *ctx, int listen) {
 	while (1) {
 		// a simple timeout check here, every time 100, better to use a mini-heap, and add timer event
 		long now = time(NULL);
+		if (!listen){
 		for (i = 0; i < 100; i++, checkPos++) // doesn't check listen fd
 		{
 			if (checkPos == MAX_EVENTS)
@@ -160,20 +167,20 @@ int epoll_new(struct context *ctx, int listen) {
 			long duration = now - ctx->g_Events[checkPos].last_active;
 			if (duration >= 60) // 60s timeout
 			{
-				close(ctx->g_Events[checkPos].fd);
-				printf("[fd=%d] timeout[%ld--%ld].\n", ctx->g_Events[checkPos].fd,
-						ctx->g_Events[checkPos].last_active, now);
-				EventDel(epollFd, &ctx->g_Events[checkPos]);
+				ctx->g_Events[checkPos].last_active = now;
+//				close(ctx->g_Events[checkPos].fd);
+				printf("[threadId = %d %d][fd=%d] timeout[%ld--%ld] pos = %d\n", ctx->threadId, listen, ctx->g_Events[checkPos].fd,
+						ctx->g_Events[checkPos].last_active, now, checkPos);
+//				EventDel(epollFd, &ctx->g_Events[checkPos]);
 			}
 		}
-		if (!listen){
 			int nfd = get(ctx->buffer);
-//		printf("get %d %p\n", nfd, ctx->buffer);
 			if (nfd > 0)
 			{
+		printf("get %d %p\n", nfd, ctx);
 				// add a read event for receive data
 				EventSet(&ctx->g_Events[i], nfd, RecvData, &ctx->g_Events[i]);
-				EventAdd(ctx->epollFd, EPOLLIN, &ctx->g_Events[i]);
+				EventAdd(ctx->epollFd, EPOLLIN | EPOLLONESHOT, &ctx->g_Events[i]);
 			}
 		}
 		// wait for events to happen
@@ -182,11 +189,12 @@ int epoll_new(struct context *ctx, int listen) {
 			printf("epoll_wait error, exit\n");
 			break;
 		}
+//		printf("epoll_wait fds = %d\n", fds);
 		for (i = 0; i < fds; i++) {
 			struct myevent_s *ev = (struct myevent_s*) events[i].data.ptr;
 			if ((events[i].events & EPOLLIN) && (ev->events & EPOLLIN)) // read event
 			{
-				printf("%d %p\n", ev->fd, ev->arg);
+				printf("%s = %d %d\n", __func__, ev->fd, ctx->threadId);
 				ev->call_back(ctx, ev->fd, events[i].events, ev->arg);
 			}
 			if ((events[i].events & EPOLLOUT) && (ev->events & EPOLLOUT)) // write event

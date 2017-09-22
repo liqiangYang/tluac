@@ -32,6 +32,7 @@ struct context {
 	int epollFd;
 	struct myevent_s g_Events[MAX_EVENTS + 1];
 	struct prodcons *buffer;
+	int threadId;
 };
 
 

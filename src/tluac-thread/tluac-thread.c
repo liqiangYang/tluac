@@ -16,6 +16,19 @@ struct context ctxs[THREADS + 1];
 void thread_create(void) {
 	int temp;
 	memset(&thread, 0, sizeof(thread));
+
+	int i = 0;
+	for (i = 1; i < THREADS + 1; i++) {
+		init(&buffer[i]);
+		ctxs[i].buffer = &buffer[i];
+		ctxs[i].threadId = i;
+
+		if ((temp = pthread_create(&thread[i], NULL, thread_worker, &ctxs[i])) != 0)
+			printf("线程 %d 创建失败!\n", i);
+		else
+			printf("线程 %d 被创建 buffer : %p %p\n", i, &ctxs[i],  &buffer[i]);
+	}
+
 	struct context ctx_listen;
 	ctxs[0] = ctx_listen;
 	/*创建线程*/
@@ -24,16 +37,6 @@ void thread_create(void) {
 	else
 		printf("线程 监听 被创建\n");
 
-	int i = 0;
-	for (i = 1; i < THREADS + 1; i++) {
-		init(&buffer[i]);
-		ctxs[i].buffer = &buffer[i];
-
-		if ((temp = pthread_create(&thread[i], NULL, thread_worker, &ctxs[i])) != 0)
-			printf("线程 %d 创建失败!\n", i);
-		else
-			printf("线程 %d 被创建 buffer : %p %p\n", i, ctxs[i].buffer,  &buffer[i]);
-	}
 }
 
 void thread_wait(void) {
@@ -58,8 +61,12 @@ void *thread_listen(void *arg) {
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = INADDR_ANY;
 	sin.sin_port = htons(8888);
-	bind(listenFd, (const sockaddr*) &sin, sizeof(sin));
-	listen(listenFd, 5);
+	if (bind(listenFd, (const sockaddr*) &sin, sizeof(sin)) < 0){
+		printf("bind error [%d] %s\n", errno, strerror(errno));
+	}
+	if (listen(listenFd, 5) < 0){
+	    printf("listen error [%d] %s\n", errno, strerror(errno));
+	}
 
 	int l_epollFd;
 
@@ -70,7 +77,7 @@ void *thread_listen(void *arg) {
 
 	struct context *ctx = (struct context *)arg;
 	ctx->epollFd = l_epollFd;
-	printf("thread listen :  %p \n", ctx);
+	printf("thread listen :  %p %d %ld\n", ctx, listenFd,l_epollFd);
 	// create & bind listen socket, and add to epoll, set non-blocking
 	InitListenSocket(ctx, listenFd);
 	epoll_new(ctx, 1);
