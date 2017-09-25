@@ -21,6 +21,7 @@ void thread_create(void) {
 		init(&buffer[i]);
 		ctxs[i].buffer = &buffer[i];
 		ctxs[i].threadId = i;
+		ctxs[i].event_num = -1;
 
 		if ((temp = pthread_create(&thread[i], NULL, thread_worker, &ctxs[i])) != 0)
 			printf("线程 %d 创建失败!\n", i);
