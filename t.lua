@@ -1,4 +1,8 @@
+print(type(tluac))
+print("-----------------------")
 tluac:on(tluac.CONNECT, "on_connect")
+print("--------on_connect----------")
 tluac:on(tluac.MESSAGE, "on_message")
+print("--------on_message----------")
 tluac:on(tluac.CLOSE, "on_close")
-
+print("=========================")
