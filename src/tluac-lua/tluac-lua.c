@@ -1,7 +1,7 @@
 #include "tluac-lua.h"
 
 void luanew(struct context * ctx){
-	ctx->lua = lua_open();
+	ctx->lua = luaL_newstate();
 	luaopen_base(ctx->lua);
 	luaopen_io(ctx->lua);
 }
