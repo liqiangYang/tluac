@@ -7,7 +7,7 @@ void luanew(struct context * ctx){
 }
 
 lua_State *lua_corutine(struct context * ctx){
-	return luaopen_coroutine(ctx->lua);
+	return lua_newthread(ctx->lua);
 }
 
 void luareg(struct context * ctx){
