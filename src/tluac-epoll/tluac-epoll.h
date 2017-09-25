@@ -34,7 +34,7 @@ struct context {
 	int threadId;
 	int epollFd;
 	struct myevent_s g_Events[MAX_EVENTS + 1];
-	int event_num = -1;
+	int event_num;
 	struct prodcons *buffer;
 	lua_State *lua;
 	char *on_connect;
