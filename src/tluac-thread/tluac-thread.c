@@ -89,6 +89,7 @@ void *thread_worker(void *arg) {
 	printf("thread :  %p \n", ctx);
 
 	luanew(ctx);
+	luareg(ctx);
 	luadofile(ctx, "t.lua");
 
 	epoll_new(ctx, 0);
