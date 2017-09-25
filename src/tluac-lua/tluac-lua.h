@@ -8,11 +8,6 @@
 #ifndef TLUA_LUA
 
 #define TLUA_LUA 1
-#include "../tluac-epoll/tluac-epoll.h"
-
-#ifndef TLUA_LUA
-
-#define TLUA_LUA 1
 
 #include "../tluac-epoll/tluac-epoll.h"
 void luanew(struct context * ctx);
