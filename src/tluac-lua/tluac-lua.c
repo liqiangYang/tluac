@@ -1,9 +1,13 @@
 #include "tluac-lua.h"
 
 void luanew(struct context * ctx){
-	ctx->lua = lua_open();
+	ctx->lua = luaL_newstate();
 	luaopen_base(ctx->lua);
 	luaopen_io(ctx->lua);
+}
+
+lua_State *lua_corutine(struct context * ctx){
+	return luaopen_coroutine(ctx->lua);
 }
 
 void luareg(struct context * ctx){
@@ -45,6 +49,16 @@ int _on(lua_State *L){
 	char *func = lua_tostring(L, 3);
 
 	printf("t = %d, func = %s\n", t,func);
+
+	if (t == 1){
+		ctx->on_connect = func;
+	}else if(t == 2){
+		ctx->on_message = func;
+	}else if(t == 3){
+		ctx->on_close = func;
+	}
+
+	return 0;
 }
 
 void luadofile(struct context * ctx, char *file){

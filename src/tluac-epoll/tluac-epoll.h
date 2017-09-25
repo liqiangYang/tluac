@@ -26,14 +26,20 @@ struct myevent_s {
 	char buff[128]; // recv data buffer
 	int len, s_offset;
 	long last_active; // last active time
+	int index;
+	lua_State *corutine;
 };
 
 struct context {
 	int threadId;
 	int epollFd;
 	struct myevent_s g_Events[MAX_EVENTS + 1];
+	int event_num = -1;
 	struct prodcons *buffer;
 	lua_State *lua;
+	char *on_connect;
+	char *on_message;
+	char *on_close;
 };
 
 
@@ -44,4 +50,5 @@ void RecvData(struct context *ctx, int fd, int events, void *arg);
 void SendData(struct context *ctx, int fd, int events, void *arg);
 int epoll_new(struct context *ctx, int listen);
 void InitListenSocket(struct context *ctx, int epollFd);
+void rmEvent(struct context *ctx, int index);
 #endif

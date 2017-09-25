@@ -89,20 +89,33 @@ void RecvData(struct context *ctx, int fd, int events, void *arg) {
 	int len;
 	// receive data
 	len = recv(fd, ev->buff + ev->len, sizeof(ev->buff) - 1 - ev->len, 0);
-	int t = EventDel(ctx->epollFd, ev);
 	if (len > 0) {
 		ev->len += len;
 		ev->buff[len] = '\0';
 		printf("Recv [%d]:%s\n", fd, ev->buff);
+
+		lua_getfield(ev->corutine, LUA_GLOBALSINDEX, ctx->on_message);
+		lua_pushinteger(ev->corutine, fd);
+		lua_pushlstring(ev->corutine, ev->buff, len);
+		lua_call(ev->corutine, 1, 0);
+
 		// change to send event
-		EventSet(ev, fd, SendData, ev);
-		EventAdd(ctx->epollFd, EPOLLOUT | EPOLLONESHOT , ev);
+//		EventSet(ev, fd, SendData, ev);
+//		EventAdd(ctx->epollFd, EPOLLOUT | EPOLLONESHOT , ev);
 	} else if (len == 0) {
+		lua_getfield(ev->corutine, LUA_GLOBALSINDEX, ctx->on_close);
+		lua_pushinteger(ev->corutine, ev->fd);
+		lua_call(ev->corutine, 1, 0);
 		close(ev->fd);
-		printf("[fd=%d] pos[%ld], closed gracefully t = %d %d.\n", fd, ev - ctx->g_Events, t, ctx->threadId);
+		printf("[fd=%d] pos[%ld], closed gracefully %d.\n", fd, ev - ctx->g_Events, ctx->threadId);
+		rmEvent(ctx, ev->index);
 	} else if (errno != EAGAIN) {
+		lua_getfield(ev->corutine, LUA_GLOBALSINDEX, ctx->on_close);
+		lua_pushinteger(ev->corutine, ev->fd);
+		lua_call(ev->corutine, 1, 0);
 		close(ev->fd);
-		printf("[%d] recv[fd=%d] error[%d]:%s t = %d\n", ctx->threadId, fd, errno, strerror(errno), t);
+		printf("[%d] recv[fd=%d] error[%d]:%s\n", ctx->threadId, fd, errno, strerror(errno));
+		rmEvent(ctx, ev->index);
 	}
 }
 // send data
@@ -129,7 +142,18 @@ void SendData(struct context *ctx, int fd, int events, void *arg) {
 		printf("send[fd=%d,%d] error[%d]:%s\n", fd, ev->fd, errno, strerror(errno));
 		close(ev->fd);
 		EventDel(ctx->epollFd, ev);
+		rmEvent(ctx, ev->index);
 	}
+}
+void rmEvent(struct context *ctx, int index){
+	int i = 0;
+	for (i = index; i < ctx->event_num; i ++){
+		if (index + 1 < MAX_EVENTS){
+			ctx->g_Events[index] = ctx->g_Events[index + 1];
+			ctx->g_Events[index]->index = index;
+		}
+	}
+	ctx->event_num -= 1;
 }
 void InitListenSocket(struct context *ctx, int fd) {
 	printf("InitListenSocket %p %d\n", ctx, fd);
@@ -158,29 +182,34 @@ int epoll_new(struct context *ctx, int listen) {
 		// a simple timeout check here, every time 100, better to use a mini-heap, and add timer event
 		long now = time(NULL);
 		if (!listen){
-		for (i = 0; i < 100; i++, checkPos++) // doesn't check listen fd
-		{
-			if (checkPos == MAX_EVENTS)
-				checkPos = 0; // recycle
-			if (ctx->g_Events[checkPos].status != 1)
-				continue;
-			long duration = now - ctx->g_Events[checkPos].last_active;
-			if (duration >= 60) // 60s timeout
+			for (i = 0; i < 100; i++, checkPos++) // doesn't check listen fd
 			{
-				ctx->g_Events[checkPos].last_active = now;
-//				close(ctx->g_Events[checkPos].fd);
-				printf("[threadId = %d %d][fd=%d] timeout[%ld--%ld] pos = %d\n", ctx->threadId, listen, ctx->g_Events[checkPos].fd,
-						ctx->g_Events[checkPos].last_active, now, checkPos);
-//				EventDel(epollFd, &ctx->g_Events[checkPos]);
+				if (checkPos == MAX_EVENTS)
+					checkPos = 0; // recycle
+				if (ctx->g_Events[checkPos].status != 1)
+					continue;
+				long duration = now - ctx->g_Events[checkPos].last_active;
+				if (duration >= 60) // 60s timeout
+				{
+					ctx->g_Events[checkPos].last_active = now;
+	//				close(ctx->g_Events[checkPos].fd);
+					printf("[threadId = %d %d][fd=%d] timeout[%ld--%ld] pos = %d\n", ctx->threadId, listen, ctx->g_Events[checkPos].fd,
+							ctx->g_Events[checkPos].last_active, now, checkPos);
+	//				EventDel(epollFd, &ctx->g_Events[checkPos]);
+				}
 			}
-		}
 			int nfd = get(ctx->buffer);
 			if (nfd > 0)
 			{
-		printf("get %d %p\n", nfd, ctx);
+				ctx->event_num += 1;
+				ctx->g_Events[ctx->event_num]->index = ctx->event_num;
+				ctx->g_Events[ctx->event_num]->corutine = lua_corutine(ctx);
+				lua_getfield(ctx->g_Events[ctx->event_num]->corutine, LUA_GLOBALSINDEX, ctx->on_connect);
+				lua_pushinteger(ctx->g_Events[ctx->event_num]->corutine, nfd);
+				lua_call(ctx->g_Events[ctx->event_num]->corutine, 1, 0);
 				// add a read event for receive data
-				EventSet(&ctx->g_Events[i], nfd, RecvData, &ctx->g_Events[i]);
-				EventAdd(ctx->epollFd, EPOLLIN | EPOLLONESHOT, &ctx->g_Events[i]);
+				EventSet(&ctx->g_Events[ctx->event_num], nfd, RecvData, &ctx->g_Events[ctx->event_num]);
+				EventAdd(ctx->epollFd, EPOLLIN | EPOLLONESHOT, &ctx->g_Events[ctx->event_num]);
 			}
 		}
 		// wait for events to happen
@@ -189,7 +218,6 @@ int epoll_new(struct context *ctx, int listen) {
 			printf("epoll_wait error, exit\n");
 			break;
 		}
-//		printf("epoll_wait fds = %d\n", fds);
 		for (i = 0; i < fds; i++) {
 			struct myevent_s *ev = (struct myevent_s*) events[i].data.ptr;
 			if ((events[i].events & EPOLLIN) && (ev->events & EPOLLIN)) // read event
