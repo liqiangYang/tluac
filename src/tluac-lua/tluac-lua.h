@@ -15,5 +15,6 @@ lua_State *lua_corutine(struct context * ctx);
 void luareg(struct context * ctx);
 void luadofile(struct context * ctx, char *file);
 int _on(lua_State *L);
+int _send(lua_State *L);
 
 #endif

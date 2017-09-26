@@ -13,6 +13,7 @@ lua_State *lua_corutine(struct context * ctx){
 void luareg(struct context * ctx){
 	luaL_Reg reg[] = {
 		{"on", _on},
+		{"send", _send},
 		{NULL, NULL},
 	};
 //	lua_newuserdata(ctx->lua, sizeof(struct context));
@@ -57,6 +58,17 @@ int _on(lua_State *L){
 	}else if(t == 3){
 		ctx->on_close = func;
 	}
+
+	return 0;
+}
+
+int _send(lua_State *L){
+	struct context *ctx = lua_touserdata(L, 1);
+	int fd = lua_tointeger(L, 2);
+	int len = 0;
+	char *msg = lua_tolstring(L, 3, &len);
+
+	send(fd, msg, len, 0);
 
 	return 0;
 }

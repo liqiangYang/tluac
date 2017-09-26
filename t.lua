@@ -3,6 +3,8 @@ function on_connect(fd)
 end
 function on_message(fd, msg)
 	print("on_message", fd, msg)
+	
+	tluac:send(fd, msg .. " ---- OK")
 end
 function on_close(fd)
 	print("on_close", fd)
