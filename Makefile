@@ -1,5 +1,5 @@
 LUALIB_CYGWIN=-I/usr/include -L/usr/local/bin -llua 
-LUALIB=-I/usr/include -L/usr/local/bin -L/usr/lib -lm -llua
+LUALIB=-I/usr/include -L/usr/local/bin -L/usr/lib -lm -llua -ldl -Wl,-E
 SRC=\
 src/main.c \
 src/tluac-thread/tluac-thread.c \
