@@ -1,3 +1,10 @@
+package.cpath=package.cpath..";plugin/?.so;plugin/?/parser.so"
+
+local ok, cjson = pcall(require, "cjson")
+
+print("cjson", cjson)
+print(cjson.encode(cjson.decode(cjson.encode({a=1, b=2}))))
+
 function on_connect(fd)
 	print("on_connect", fd)
 end
