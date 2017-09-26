@@ -2,8 +2,11 @@
 
 void luanew(struct context * ctx){
 	ctx->lua = luaL_newstate();
-	luaopen_base(ctx->lua);
-	luaopen_io(ctx->lua);
+//	luaopen_base(ctx->lua);
+//	luaopen_io(ctx->lua);
+//	luaopen_package(ctx->lua);
+//	luaopen_coroutine(ctx->lua);
+	luaL_openlibs(ctx->lua);
 }
 
 lua_State *lua_coroutine(struct context * ctx){
