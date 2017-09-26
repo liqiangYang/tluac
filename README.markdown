@@ -14,12 +14,12 @@ Synopsis
 
 Build and run
 =============
-Build
+Build:
 	# make linux
-run
+run:
 	# ./tluac
 
 Description
 ===========
-嵌入lua5.3.4测试通过
-不支持5.1
+嵌入lua5.3.4测试通过  
+不支持5.1  
