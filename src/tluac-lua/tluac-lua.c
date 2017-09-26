@@ -6,7 +6,7 @@ void luanew(struct context * ctx){
 	luaopen_io(ctx->lua);
 }
 
-lua_State *lua_corutine(struct context * ctx){
+lua_State *lua_coroutine(struct context * ctx){
 	return lua_newthread(ctx->lua);
 }
 

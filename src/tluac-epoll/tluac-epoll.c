@@ -94,25 +94,25 @@ void RecvData(struct context *ctx, int fd, int events, void *arg) {
 		ev->buff[len] = '\0';
 		printf("Recv [%d]:%s\n", fd, ev->buff);
 
-		lua_getglobal(ev->corutine, ctx->on_message);
-		lua_pushinteger(ev->corutine, fd);
-		lua_pushlstring(ev->corutine, ev->buff, len);
-		lua_call(ev->corutine, 2, 0);
+		lua_getglobal(ev->coroutine, ctx->on_message);
+		lua_pushinteger(ev->coroutine, fd);
+		lua_pushlstring(ev->coroutine, ev->buff, len);
+		lua_call(ev->coroutine, 2, 0);
 
 		// change to send event
 //		EventSet(ev, fd, SendData, ev);
 //		EventAdd(ctx->epollFd, EPOLLOUT  , ev);
 	} else if (len == 0) {
-		lua_getglobal(ev->corutine, ctx->on_close);
-		lua_pushinteger(ev->corutine, ev->fd);
-		lua_call(ev->corutine, 1, 0);
+		lua_getglobal(ev->coroutine, ctx->on_close);
+		lua_pushinteger(ev->coroutine, ev->fd);
+		lua_call(ev->coroutine, 1, 0);
 		close(ev->fd);
 		printf("[fd=%d] pos[%ld], closed gracefully %d.\n", fd, ev - ctx->g_Events, ctx->threadId);
 		rmEvent(ctx, ev->index);
 	} else if (errno != EAGAIN) {
-		lua_getglobal(ev->corutine, ctx->on_close);
-		lua_pushinteger(ev->corutine, ev->fd);
-		lua_call(ev->corutine, 1, 0);
+		lua_getglobal(ev->coroutine, ctx->on_close);
+		lua_pushinteger(ev->coroutine, ev->fd);
+		lua_call(ev->coroutine, 1, 0);
 		close(ev->fd);
 		printf("[%d] recv[fd=%d] error[%d]:%s\n", ctx->threadId, fd, errno, strerror(errno));
 		rmEvent(ctx, ev->index);
@@ -203,10 +203,10 @@ int epoll_new(struct context *ctx, int listen) {
 			{
 				ctx->event_num += 1;
 				ctx->g_Events[ctx->event_num].index = ctx->event_num;
-				ctx->g_Events[ctx->event_num].corutine = lua_corutine(ctx);
-				lua_getglobal(ctx->g_Events[ctx->event_num].corutine,  ctx->on_connect);
-				lua_pushinteger(ctx->g_Events[ctx->event_num].corutine, nfd);
-				lua_call(ctx->g_Events[ctx->event_num].corutine, 1, 0);
+				ctx->g_Events[ctx->event_num].coroutine = lua_coroutine(ctx);
+				lua_getglobal(ctx->g_Events[ctx->event_num].coroutine,  ctx->on_connect);
+				lua_pushinteger(ctx->g_Events[ctx->event_num].coroutine, nfd);
+				lua_call(ctx->g_Events[ctx->event_num].coroutine, 1, 0);
 				// add a read event for receive data
 				EventSet(&ctx->g_Events[ctx->event_num], nfd, RecvData, &ctx->g_Events[ctx->event_num]);
 				EventAdd(ctx->epollFd, EPOLLIN , &ctx->g_Events[ctx->event_num]);

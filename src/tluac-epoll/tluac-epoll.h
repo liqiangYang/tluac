@@ -27,7 +27,7 @@ struct myevent_s {
 	int len, s_offset;
 	long last_active; // last active time
 	int index;
-	lua_State *corutine;
+	lua_State *coroutine;
 };
 
 struct context {
