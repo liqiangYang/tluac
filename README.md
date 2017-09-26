@@ -15,9 +15,9 @@ Synopsis
 Build and run
 =============
 Build:  
-	# make linux
+	# make linux  
 run:  
-	# ./tluac
+	# ./tluac  
 
 Description
 ===========
